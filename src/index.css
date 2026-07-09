@@ -1,0 +1,338 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;650;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Custom Concrete Grey Color Utility with absolute highest specificity */
+.text-concrete-grey {
+  color: #EFEFEF !important;
+}
+
+/* Animations without soft fading/blurring where possible - keeping it snappy and mechanical */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { height: 0; }
+  to { height: auto; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-down {
+  animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Global Heading Font Overrides for Neo-Brutalist Geometric Feel */
+h1, h2, h3, h4, .font-display {
+  font-family: "Space Grotesk", "Inter", sans-serif !important;
+  letter-spacing: -0.03em !important;
+  font-weight: 800 !important;
+  color: #000000 !important;
+}
+
+/* Base body background using Cinza Concreto Claro (#EFEFEF) */
+body {
+  background-color: #EFEFEF !important; /* Cinza Concreto Claro */
+  color: #000000 !important; /* Pure Black text */
+  font-family: "Inter", sans-serif;
+  font-weight: 500 !important;
+}
+
+#app_root {
+  background-color: #EFEFEF !important;
+}
+
+/* Elevate font-weight globally for paragraphs and descriptive texts to 500 for maximum legibility */
+p, label, li, td, th, span:not(.font-mono) {
+  font-weight: 500 !important;
+}
+
+p {
+  color: #000000 !important;
+}
+
+/* Raw, High-Contrast Text Classes */
+.text-slate-600, .text-gray-600, .text-slate-500, .text-gray-500 {
+  color: #000000 !important;
+  font-weight: 600 !important;
+}
+
+.text-slate-400, .text-gray-400 {
+  color: #000000 !important;
+  font-weight: 600 !important;
+}
+
+/* ----------------- LIGHT MODE NEO-BRUTALISM (CONCRETE INDUSTRIAL) ----------------- */
+
+/* Cards and Panels with raw borders and 5px pure black solid hard shadows */
+.bg-white, 
+[class*="bg-white"]:not(span):not(svg):not(input):not(select):not(textarea):not(button) {
+  background-color: #ffffff !important;
+  border: 2.5px solid #000000 !important;
+  box-shadow: 5px 5px 0px 0px #000000 !important;
+  border-radius: 4px !important; /* Sharp industrial corners */
+  color: #000000 !important;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Nested card overrides to prevent shadow stack clutter while maintaining crisp borders */
+.bg-white .bg-white,
+[class*="bg-white"] [class*="bg-white"],
+.bg-white [class*="bg-white"] {
+  box-shadow: none !important;
+  border: 2px solid #000000 !important;
+  background-color: #f7f7f7 !important;
+  border-radius: 4px !important;
+}
+
+/* Main Sidebar Override */
+aside {
+  background-color: #ffffff !important;
+  border-right: 3px solid #000000 !important;
+  color: #000000 !important;
+}
+
+aside nav button {
+  border: 2px solid transparent !important;
+}
+
+aside nav button[class*="bg-blue-600/15"], 
+aside nav button:hover {
+  background-color: #184A90 !important; /* Azul Bic / Royal active highlight */
+  color: #ffffff !important;
+  border: 2.5px solid #000000 !important;
+  box-shadow: 3px 3px 0px 0px #000000 !important;
+  border-radius: 4px !important;
+  font-weight: 800 !important;
+}
+
+aside nav button[class*="bg-blue-600/15"] svg,
+aside nav button:hover svg {
+  color: #ffffff !important;
+}
+
+/* Form Inputs, Selects & Textareas */
+input, select, textarea {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 2.5px solid #000000 !important;
+  border-radius: 4px !important;
+  box-shadow: 3px 3px 0px 0px #000000 !important;
+  transition: all 0.1s ease-in-out !important;
+  font-weight: 500 !important;
+}
+
+#domain_picker {
+  border-width: 3px !important;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none !important;
+  background-color: #ffffff !important;
+  box-shadow: 5px 5px 0px 0px #000000 !important;
+  transform: translate(-1px, -1px) !important;
+}
+
+/* Buttons - Flat solid shadow buttons with snappy responses */
+button:not(aside button):not(nav button):not([class*="pointer-events-none"]) {
+  border: 2.5px solid #000000 !important;
+  box-shadow: 4px 4px 0px 0px #000000 !important;
+  border-radius: 4px !important;
+  transition: all 0.1s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+}
+
+button:hover:not(:disabled):not(aside button):not(nav button) {
+  transform: translate(-1px, -1px) !important;
+  box-shadow: 5px 5px 0px 0px #000000 !important;
+}
+
+button:active:not(:disabled):not(aside button):not(nav button) {
+  transform: translate(1.5px, 1.5px) !important;
+  box-shadow: 1.5px 1.5px 0px 0px #000000 !important;
+}
+
+/* 100% Solid Primary and Secondary Actions - No Gradients allowed */
+.bg-blue-600, .bg-indigo-600 {
+  background-color: #D11A2A !important; /* Vermelho Vivo Industrial */
+  color: #ffffff !important;
+}
+
+.text-blue-600 {
+  color: #D11A2A !important;
+  font-weight: 800 !important;
+}
+
+.bg-emerald-600, .bg-emerald-500 {
+  background-color: #184A90 !important; /* Azul Bic / Royal */
+  color: #ffffff !important;
+}
+
+.bg-amber-600, .bg-amber-500 {
+  background-color: #184A90 !important; /* Secondary Highlight */
+  color: #ffffff !important;
+}
+
+.bg-red-600, .bg-red-500 {
+  background-color: #D11A2A !important; /* Primary Highlight */
+  color: #ffffff !important;
+}
+
+/* ----------------- DARK MODE NEO-BRUTALISM (HIGH CONTRAST RAW GREY) ----------------- */
+
+.dark body,
+.dark #app_root {
+  background-color: #151515 !important; /* Dark Raw Concrete */
+  color: #ffffff !important;
+}
+
+.dark p, .dark label, .dark li, .dark td, .dark th {
+  color: #ffffff !important;
+}
+
+/* High contrast dark-mode standard text descriptors */
+.dark .text-slate-400, .dark .text-gray-400, .dark .text-slate-500, .dark .text-gray-500 {
+  color: #ffffff !important;
+}
+
+.dark .text-slate-300, .dark .text-gray-300 {
+  color: #ffffff !important;
+}
+
+/* Dark Mode Cards and Panels with white borders and solid black hard shadows */
+.dark .bg-white,
+.dark [class*="bg-white"]:not(span):not(svg):not(input):not(select):not(textarea):not(button) {
+  background-color: #222222 !important;
+  border: 2.5px solid #ffffff !important;
+  box-shadow: 5px 5px 0px 0px #000000 !important;
+  color: #ffffff !important;
+}
+
+/* Dark mode nested card overrides */
+.dark .bg-white .bg-white,
+.dark [class*="bg-white"] [class*="bg-white"] {
+  box-shadow: none !important;
+  border: 2px solid #ffffff !important;
+  background-color: #1a1a1a !important;
+}
+
+/* Dark Mode Sidebar */
+.dark aside {
+  background-color: #222222 !important;
+  border-right: 3px solid #ffffff !important;
+}
+
+.dark aside h1, .dark aside p, .dark aside span, .dark aside svg, .dark aside button {
+  color: #ffffff !important;
+}
+
+.dark aside nav button[class*="bg-blue-600/15"], 
+.dark aside nav button:hover {
+  background-color: #D11A2A !important; /* Vermelho Vivo active link in dark */
+  color: #ffffff !important;
+  border: 2.5px solid #ffffff !important;
+  box-shadow: 3px 3px 0px 0px #000000 !important;
+}
+
+.dark aside nav button[class*="bg-blue-600/15"] svg,
+.dark aside nav button:hover svg {
+  color: #ffffff !important;
+}
+
+/* Dark Mode Inputs, Selects & Textareas */
+.dark input, .dark select, .dark textarea {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  border: 2.5px solid #ffffff !important;
+  box-shadow: 3px 3px 0px 0px #000000 !important;
+}
+
+.dark #domain_picker {
+  border-width: 3px !important;
+}
+
+.dark input:focus, .dark select:focus, .dark textarea:focus {
+  background-color: #1a1a1a !important;
+  box-shadow: 5px 5px 0px 0px #000000 !important;
+}
+
+/* Dark Mode Buttons */
+.dark button:not(aside button):not(nav button):not([class*="pointer-events-none"]) {
+  border: 2.5px solid #ffffff !important;
+  box-shadow: 4px 4px 0px 0px #000000 !important;
+  color: #ffffff !important;
+  background-color: #222222 !important;
+}
+
+.dark button:hover:not(:disabled):not(aside button):not(nav button) {
+  box-shadow: 5px 5px 0px 0px #000000 !important;
+  background-color: #2e2e2e !important;
+}
+
+.dark button:active:not(:disabled):not(aside button):not(nav button) {
+  box-shadow: 1.5px 1.5px 0px 0px #000000 !important;
+}
+
+/* Dark Mode Colored Buttons Overrides */
+.dark .bg-blue-600, .dark .bg-indigo-600 {
+  background-color: #D11A2A !important; /* Vermelho Vivo Industrial */
+  border: 2.5px solid #ffffff !important;
+  color: #ffffff !important;
+}
+
+.dark .bg-emerald-600, .dark .bg-emerald-500 {
+  background-color: #184A90 !important; /* Azul Bic / Royal */
+  border: 2.5px solid #ffffff !important;
+  color: #ffffff !important;
+}
+
+.dark .bg-amber-600, .dark .bg-amber-500 {
+  background-color: #184A90 !important;
+  border: 2.5px solid #ffffff !important;
+  color: #ffffff !important;
+}
+
+.dark .bg-red-600, .dark .bg-red-500 {
+  background-color: #D11A2A !important;
+  border: 2.5px solid #ffffff !important;
+  color: #ffffff !important;
+}
+
+/* ----------------- DEDICATED INDUSTRIAL FOOTER ----------------- */
+
+footer {
+  background-color: #000000 !important; /* Pure black solid footer block */
+  border-top: 3.5px solid #000000 !important;
+  color: #ffffff !important;
+}
+
+footer p {
+  color: #ffffff !important;
+}
+
+footer span {
+  color: #ffffff !important;
+}
+
+.dark footer {
+  background-color: #000000 !important;
+  border-top: 3.5px solid #ffffff !important;
+  color: #ffffff !important;
+}
+
+.dark footer p {
+  color: #ffffff !important;
+}
+
+.dark footer span {
+  color: #ffffff !important;
+}

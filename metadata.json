@@ -1,0 +1,6 @@
+{
+  "name": "Analisador de Sites & SEO",
+  "description": "Plataforma completa de auditoria para analisar desempenho, acessibilidade, SEO, integrando dados do Google Analytics e Search Console com histórico e relatórios em PDF.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

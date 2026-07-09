@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SiteAnalyzer v1.2 - Auditoria IA de SEO & CWV</title>
+  
+  <!-- Fontes do Google -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React & Babel CDN para execução de lógica reativa nativa -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Configurações do Tailwind -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            concrete: '#EFEFEF',
+            industrialRed: '#D11A2A',
+            activeBlue: '#184A90',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          borderWidth: {
+            '3': '3px',
+            '2.5': '2.5px',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Estilos Neo-Brutalistas customizados para o app */
+    .neo-border {
+      border: 2.5px solid #000000;
+    }
+    .neo-border-3 {
+      border: 3px solid #000000;
+    }
+    .neo-shadow {
+      box-shadow: 4px 4px 0px #000000;
+    }
+    .neo-shadow-lg {
+      box-shadow: 6px 6px 0px #000000;
+    }
+    .neo-shadow-sm {
+      box-shadow: 2px 2px 0px #000000;
+    }
+    .neo-click:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0px #000000;
+    }
+    
+    /* Scrollbar minimalista */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #EFEFEF;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #000000;
+      border: 2px solid #EFEFEF;
+    }
+    
+    /* Fade-In animado */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.25s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="bg-[#EFEFEF] text-black font-sans antialiased min-h-screen">
+
+  <div id="root"></div>
+
+  <!-- Lógica React Transpilada On-the-fly -->
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // Componente de Ícones customizados via SVG para evitar dependências externas lentas
+    const Icon = ({ name, className = "h-5 w-5" }) => {
+      const icons = {
+        globe: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />,
+        trending: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />,
+        compare: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />,
+        chart: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />,
+        mail: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />,
+        checklist: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />,
+        shield: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />,
+        menu: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16M4 18h16" />,
+        close: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />,
+        sun: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />,
+        moon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />,
+        search: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />,
+        play: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />,
+        alert: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />,
+        phone: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />,
+        monitor: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9.75 17L9 20h6l-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />,
+        trash: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />,
+        plus: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+      };
+
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          {icons[name] || <circle cx="12" cy="12" r="10" strokeWidth="2.5" />}
+        </svg>
+      );
+    };
+
+    // Mock Data para Inicialização
+    const initialDomains = [
+      {
+        id: "dom-1",
+        url: "meusite.com.br",
+        googleConnected: true,
+        auditDevice: "desktop",
+        latestReport: {
+          title: "Meu Site | Home",
+          description: "A melhor plataforma para otimização de SEO e performance técnica na web.",
+          scores: { perf: 94, access: 98, seo: 92, pwa: 80 },
+          metrics: { lcp: "1.4s", fid: "12ms", cls: "0.02", speedIndex: "1.8s" },
+          issues: [
+            { id: "iss-1", title: "Imagens sem atributo alt", severity: "warning", cat: "Acessibilidade", desc: "Forneça textos alternativos para leitores de tela." },
+            { id: "iss-2", title: "Scripts terceiros pesados", severity: "critical", cat: "Desempenho", desc: "Bloqueia a thread principal por 240ms." }
+          ]
+        }
+      },
+      {
+        id: "dom-2",
+        url: "apple.com",
+        googleConnected: false,
+        auditDevice: "mobile",
+        latestReport: {
+          title: "Apple (Brasil)",
+          description: "Descubra o mundo inovador da Apple e compre tudo o que precisa online.",
+          scores: { perf: 48, access: 90, seo: 88, pwa: 60 },
+          metrics: { lcp: "4.8s", fid: "120ms", cls: "0.15", speedIndex: "5.2s" },
+          issues: [
+            { id: "iss-3", title: "Tempo de Carregamento Crítico", severity: "critical", cat: "Desempenho", desc: "LCP ultrapassou a marca segura de 2.5s." }
+          ]
+        }
+      }
+    ];
+
+    const initialChecklist = [
+      { id: "chk-1", title: "Adicionar tags OpenGraph", category: "SEO On-Page", priority: "high", status: "completed" },
+      { id: "chk-2", title: "Otimizar compressão WebP", category: "Desempenho", priority: "high", status: "pending" },
+      { id: "chk-3", title: "Configurar sitemap.xml", category: "SEO On-Page", priority: "medium", status: "pending" }
+    ];
+
+    function App() {
+      const [isDarkMode, setIsDarkMode] = useState(false);
+      const [activeTab, setActiveTab] = useState("audit");
+      const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+      const [domains, setDomains] = useState(initialDomains);
+      const [activeDomainId, setActiveDomainId] = useState("dom-1");
+      const [analyzingUrl, setAnalyzingUrl] = useState("");
+      const [selectedAuditDevice, setSelectedAuditDevice] = useState("desktop");
+      const [isAnalyzing, setIsAnalyzing] = useState(false);
+      
+      // Checklist State
+      const [checklist, setChecklist] = useState(initialChecklist);
+      const [newChkTit, setNewChkTit] = useState("");
+      const [newChkPriority, setNewChkPriority] = useState("medium");
+      
+      // Painel Manutenção State
+      const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
+
+      // Toast State
+      const [toasts, setToasts] = useState([]);
+
+      const triggerToast = (msg, type = "success") => {
+        const id = Date.now();
+        setToasts(prev => [...prev, { id, msg, type }]);
+        setTimeout(() => {
+          setToasts(prev => prev.filter(t => t.id !== id));
+        }, 3500);
+      };
+
+      const activeDomain = domains.find(d => d.id === activeDomainId) || domains[0];
+
+      const handleAnalyze = (e) => {
+        e.preventDefault();
+        if (!analyzingUrl) return;
+        setIsAnalyzing(true);
+        triggerToast("Iniciando varredura IA no domínio...", "info");
+        
+        setTimeout(() => {
+          setIsAnalyzing(false);
+          const cleanUrl = analyzingUrl.replace(/https?:\/\//, "");
+          const newDom = {
+            id: `dom-${Date.now()}`,
+            url: cleanUrl,
+            googleConnected: false,
+            auditDevice: selectedAuditDevice,
+            latestReport: {
+              title: `Relatório Auditado | ${cleanUrl}`,
+              description: "Análise realizada com sucesso via motor heurístico do SiteAnalyzer.",
+              scores: { perf: 85, access: 92, seo: 95, pwa: 70 },
+              metrics: { lcp: "1.9s", fid: "24ms", cls: "0.04", speedIndex: "2.1s" },
+              issues: [
+                { id: `iss-${Date.now()}`, title: "Arquivos CSS não minificados", severity: "warning", cat: "Desempenho", desc: "Economize até 45kb comprimindo folhas de estilo." }
+              ]
+            }
+          };
+          setDomains(prev => [...prev, newDom]);
+          setActiveDomainId(newDom.id);
+          setAnalyzingUrl("");
+          triggerToast(`Auditoria concluída com sucesso para "${cleanUrl}"!`);
+        }, 1500);
+      };
+
+      const toggleChecklist = (id) => {
+        setChecklist(prev => prev.map(c => c.id === id ? { ...c, status: c.status === "completed" ? "pending" : "completed" } : c));
+        triggerToast("Tarefa atualizada!");
+      };
+
+      const handleAddChecklist = (e) => {
+        e.preventDefault();
+        if (!newChkTit) return;
+        const newTask = {
+          id: `chk-${Date.now()}`,
+          title: newChkTit,
+          category: "SEO On-Page",
+          priority: newChkPriority,
+          status: "pending"
+        };
+        setChecklist(prev => [newTask, ...prev]);
+        setNewChkTit("");
+        triggerToast("Tarefa de SEO criada!");
+      };
+
+      return (
+        <div className={`min-h-screen flex text-black transition-colors duration-200 ${isDarkMode ? "dark bg-[#111111]" : "bg-[#EFEFEF]"}`}>
+          
+          {/* TOAST PANEL (Neo-Brutalist Alerts) */}
+          <div className="fixed bottom-5 right-5 z-[9999] flex flex-col gap-3 max-w-sm w-full">
+            {toasts.map(t => (
+              <div 
+                key={t.id} 
+                className="bg-[#222222] border-3 border-black text-[#EFEFEF] p-4 rounded-xl flex items-start gap-3 shadow-[4px_4px_0px_#000000] animate-fade-in"
+              >
+                <Icon name="alert" className="h-5 w-5 text-industrialRed shrink-0 mt-0.5 animate-pulse" />
+                <div className="flex-1">
+                  <p className="text-xs font-bold font-mono text-[#EFEFEF] uppercase tracking-wider mb-0.5">Alerta de Sistema</p>
+                  <p className="text-xs font-semibold text-[#EFEFEF] leading-relaxed">{t.msg}</p>
+                </div>
+                <button onClick={() => setToasts(prev => prev.filter(x => x.id !== t.id))} className="text-[#EFEFEF] hover:text-industrialRed font-extrabold text-xs">
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* MOBILE SIDEBAR DRAWER (Slide-out Brutalist Menu) */}
+          {isMobileMenuOpen && (
+            <div className="fixed inset-0 z-50 md:hidden flex">
+              <div className="fixed inset-0 bg-black/60" onClick={() => setIsMobileMenuOpen(false)} />
+              
+              <div className={`relative w-80 max-w-[85vw] h-full flex flex-col border-r-3 border-black shadow-[6px_0px_0px_#000000] transition-colors duration-200 z-10 ${
+                isDarkMode ? "bg-[#222222] text-white" : "bg-white text-black"
+              }`}>
+                {/* Header Menu */}
+                <div className="p-5 flex items-center justify-between border-b-3 border-black">
+                  <div className="flex items-center gap-2.5">
+                    <div className="bg-industrialRed text-white p-2 rounded-xl border-2 border-black flex items-center justify-center">
+                      <Icon name="globe" className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-bold tracking-tight text-black dark:text-white flex items-center gap-1.5">
+                        SiteAnalyzer <span className="text-[9px] bg-black text-concrete px-1 py-0.2 rounded font-mono">v1.2</span>
+                      </h2>
+                      <p className="text-[9px] text-slate-500 font-bold uppercase">Auditoria IA de SEO & CWV</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="p-1.5 border-2 border-black bg-white dark:bg-slate-900 text-black dark:text-white rounded-lg shadow-sm neo-click"
+                  >
+                    <Icon name="close" className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {/* Navigation Items */}
+                <nav className="flex-1 p-4 space-y-2.5 overflow-y-auto">
+                  {[
+                    { id: "audit", label: "Relatório Auditoria", icon: "globe" },
+                    { id: "history", label: "Histórico Domínio", icon: "trending" },
+                    { id: "compare", label: "Comparar Domínios", icon: "compare" },
+                    { id: "integrations", label: "Google Integrations", icon: "chart" },
+                    { id: "email", label: "Relatórios Mensais", icon: "mail" },
+                    { id: "checklist", label: "Checklist SEO", icon: "checklist" },
+                    { id: "maintenance", label: "Painel Manutenção", icon: "shield" }
+                  ].map(tab => {
+                    const isSelected = activeTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => {
+                          setActiveTab(tab.id);
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold border-2 transition-all text-left ${
+                          isSelected 
+                            ? "bg-activeBlue text-white border-black shadow-[3px_3px_0px_#000000]" 
+                            : "text-black dark:text-white border-transparent hover:bg-slate-100 dark:hover:bg-slate-800"
+                        }`}
+                      >
+                        <Icon name={tab.icon} className="h-4 w-4" />
+                        <span>{tab.label}</span>
+                      </button>
+                    );
+                  })}
+                </nav>
+
+                {/* Footer Widget */}
+                <div className="p-4 border-t-2 border-black bg-slate-950/5">
+                  <div className="bg-white dark:bg-slate-900 border-2 border-black rounded-xl p-3 text-[11px] shadow-[3px_3px_0px_#000000]">
+                    <span className="text-[9px] text-slate-500 uppercase tracking-wider block font-mono font-bold mb-2">Conectividade Google</span>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-black dark:text-white font-semibold">Google Analytics</span>
+                      <span className={`w-2.5 h-2.5 rounded-full border border-black ${activeDomain.googleConnected ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* DESKTOP SIDEBAR - Professional Polish Style */}
+          <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col border-r border-slate-800 hidden md:flex shrink-0">
+            <div className="p-6 flex items-center gap-3 border-b border-slate-800">
+              <div className="bg-industrialRed text-white p-2 rounded-xl border border-black flex items-center justify-center shadow">
+                <Icon name="globe" className="h-5 w-5" />
+              </div>
+              <div>
+                <h1 className="text-sm font-bold tracking-tight text-white flex items-center gap-1.5">
+                  SiteAnalyzer <span className="text-[9px] bg-black text-[#EFEFEF] px-1 py-0.2 rounded font-mono">v1.2</span>
+                </h1>
+                <p className="text-[10px] text-slate-400 font-medium">Auditoria IA de SEO & CWV</p>
+              </div>
+            </div>
+
+            {/* Sidebar user container */}
+            <div className="px-5 py-4 border-b border-slate-800 bg-slate-950/20 flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg text-white bg-slate-800 border border-slate-700">
+                  <Icon name="shield" className="h-3.5 w-3.5 text-concrete" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[9px] text-slate-500 font-bold uppercase block leading-none mb-1">Administrador</span>
+                  <span className="text-xs font-semibold text-concrete truncate block">usuario.demo@gmail.com</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Main sidebar nav */}
+            <nav className="flex-1 px-4 py-5 space-y-2">
+              {[
+                { id: "audit", label: "Relatório Auditoria", icon: "globe" },
+                { id: "history", label: "Histórico Domínio", icon: "trending" },
+                { id: "compare", label: "Comparar Domínios", icon: "compare" },
+                { id: "integrations", label: "Google Integrations", icon: "chart" },
+                { id: "email", label: "Relatórios Mensais", icon: "mail" },
+                { id: "checklist", label: "Checklist SEO", icon: "checklist" },
+                { id: "maintenance", label: "Painel Manutenção", icon: "shield" }
+              ].map(tab => {
+                const isSelected = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-bold transition-all text-left ${
+                      isSelected 
+                        ? "bg-activeBlue text-white shadow-sm font-semibold border-0" 
+                        : "text-slate-400 hover:text-white hover:bg-slate-800"
+                    }`}
+                  >
+                    <Icon name={tab.icon} className="h-4 w-4" />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Bottom Connectivity Widget */}
+            <div className="p-4 border-t border-slate-800">
+              <div className="bg-slate-950/40 rounded-xl p-3 text-[11px] border border-slate-800">
+                <span className="text-[9px] text-slate-500 uppercase tracking-wider block font-mono font-bold mb-2">Conectividade Google</span>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-slate-400 font-medium">Google Analytics</span>
+                  <span className={`w-2.5 h-2.5 rounded-full border border-black ${activeDomain.googleConnected ? 'bg-emerald-500' : 'bg-slate-600'}`}></span>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* MAIN CONTENT AREA */}
+          <div className="flex-1 flex flex-col min-w-0">
+            
+            {/* STICKY TOPBAR HEADER */}
+            <header className={`border-b-3 border-black sticky top-0 z-40 py-4 px-6 transition-colors duration-200 ${
+              isDarkMode ? "bg-slate-900 text-white" : "bg-white text-black"
+            }`}>
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                
+                {/* Branding fallback for mobile */}
+                <div className="flex items-center justify-between w-full md:hidden mb-1">
+                  <div className="flex items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                      className="p-1.5 border-2 border-black bg-white text-black rounded-lg shadow-sm neo-click"
+                    >
+                      <Icon name="menu" className="h-4 w-4" />
+                    </button>
+                    <div className="bg-industrialRed text-white p-1.5 rounded-lg border-2 border-black">
+                      <Icon name="globe" className="h-4 w-4" />
+                    </div>
+                    <span className="text-sm font-bold tracking-tight text-black dark:text-white">SiteAnalyzer</span>
+                  </div>
+                  
+                  <button
+                    type="button"
+                    onClick={() => setIsDarkMode(!isDarkMode)}
+                    className="p-1.5 border-2 border-black bg-white text-black rounded-lg shadow-sm neo-click"
+                  >
+                    <Icon name={isDarkMode ? "sun" : "moon"} className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+
+                {/* Quick URL Auditor Bar */}
+                <form onSubmit={handleAnalyze} className="flex flex-col sm:flex-row flex-1 max-w-xl gap-2.5 w-full relative">
+                  <div className="relative flex-1 min-w-0">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                      <Icon name="search" className="h-4 w-4" />
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="Analisar nova URL... ex: google.com"
+                      value={analyzingUrl}
+                      onChange={(e) => setAnalyzingUrl(e.target.value)}
+                      disabled={isAnalyzing}
+                      required
+                      className="w-full border-2 border-black rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-activeBlue bg-slate-50 text-black placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0 self-stretch sm:self-auto justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedAuditDevice(prev => prev === "mobile" ? "desktop" : "mobile")}
+                      className="px-3 py-2 rounded-lg border-2 border-black bg-white text-black flex items-center justify-center gap-1.5 cursor-pointer shadow-sm neo-click"
+                    >
+                      <Icon name={selectedAuditDevice === "mobile" ? "phone" : "monitor"} className="h-4 w-4" />
+                      <span className="text-xs font-bold">{selectedAuditDevice === "mobile" ? "Móvel" : "Desktop"}</span>
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isAnalyzing}
+                      className="bg-industrialRed hover:bg-industrialRed/95 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border-2 border-black shadow-sm neo-click"
+                    >
+                      {isAnalyzing ? (
+                        <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent" />
+                      ) : (
+                        <Icon name="play" className="h-3.5 w-3.5" />
+                      )}
+                      <span>{isAnalyzing ? "Analisando" : "Analisar"}</span>
+                    </button>
+                  </div>
+                </form>
+
+                {/* Desktop Theme & User profile */}
+                <div className="hidden md:flex items-center gap-3">
+                  <button
+                    onClick={() => setIsDarkMode(!isDarkMode)}
+                    className="p-1.5 border-2 border-black bg-white text-black rounded-lg shadow-sm neo-click"
+                  >
+                    <Icon name={isDarkMode ? "sun" : "moon"} className="h-4 w-4" />
+                  </button>
+                  <div className="border-2 border-black bg-white rounded-xl py-1.5 px-3 flex items-center gap-2 text-xs font-bold shadow-sm">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Modo Online</span>
+                  </div>
+                </div>
+
+              </div>
+            </header>
+
+            {/* MAIN APP SCROLLABLE LAYOUT */}
+            <main className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
+
+              {/* MANTENANÇA BANNER (If Enabled) */}
+              {isMaintenanceMode && (
+                <div className="bg-[#222222] border-3 border-black rounded-xl p-4.5 text-[#EFEFEF] text-xs flex items-center justify-between gap-4 animate-fade-in shadow-[4px_4px_0px_#000000]">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-industrialRed text-white rounded-xl border border-black shadow">
+                      <Icon name="alert" className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-[#EFEFEF] leading-tight">Sistema em Modo de Manutenção Programada</h4>
+                      <p className="text-slate-300 mt-0.5 leading-relaxed">Novas auditorias e geração de relatórios estão suspensas temporariamente para otimização de infraestrutura.</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] bg-industrialRed text-white border border-black px-2.5 py-1 rounded-lg font-mono font-bold uppercase tracking-wider">Modo Admin Ativo</span>
+                </div>
+              )}
+
+              {/* DOMAIN METRICS PANEL BAR */}
+              <div className="bg-white dark:bg-slate-900 border-3 border-black rounded-2xl p-6 shadow-[6px_6px_0px_#000000] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in">
+                <div className="min-w-0">
+                  <span className="text-[10px] bg-activeBlue text-white px-2 py-0.5 border border-black rounded font-mono font-bold uppercase tracking-wider">Domínio Ativo</span>
+                  <h2 className="text-2xl font-black text-black dark:text-white mt-1.5 flex items-center gap-2 truncate">
+                    {activeDomain.url}
+                    {activeDomain.googleConnected && (
+                      <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[9px] uppercase px-1.5 py-0.5 rounded font-extrabold tracking-wider">GSC Ativo</span>
+                    )}
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-1 font-medium truncate">{activeDomain.latestReport?.title || "Sem relatório carregado"}</p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                  <select 
+                    value={activeDomainId} 
+                    onChange={(e) => setActiveDomainId(e.target.value)}
+                    className="flex-1 sm:flex-none border-2 border-black rounded-xl bg-concrete text-black py-2 px-3.5 text-xs font-bold cursor-pointer focus:outline-none shadow-sm"
+                  >
+                    {domains.map(d => (
+                      <option key={d.id} value={d.id}>{d.url}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* TAB VIEWS CONTROLLER */}
+              {activeTab === "audit" && (
+                <div className="space-y-6 animate-fade-in">
+                  
+                  {/* CORES WEB VITALS (Brutalist circular scores) */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[
+                      { key: "perf", label: "Desempenho", score: activeDomain.latestReport.scores.perf },
+                      { key: "access", label: "Acessibilidade", score: activeDomain.latestReport.scores.access },
+                      { key: "seo", label: "SEO", score: activeDomain.latestReport.scores.seo },
+                      { key: "pwa", label: "PWA", score: activeDomain.latestReport.scores.pwa }
+                    ].map(col => {
+                      const isCritical = col.score < 50;
+                      const isWarning = col.score >= 50 && col.score < 90;
+                      const colorClass = isCritical ? "text-industrialRed border-industrialRed bg-industrialRed/5" : isWarning ? "text-amber-500 border-amber-500 bg-amber-500/5" : "text-emerald-500 border-emerald-500 bg-emerald-500/5";
+                      return (
+                        <div key={col.key} className={`bg-white dark:bg-slate-900 border-2.5 border-black p-5 rounded-2xl shadow-[4px_4px_0px_#000000] text-center ${colorClass}`}>
+                          <span className="text-[10px] text-black dark:text-white uppercase font-black font-mono block tracking-wide">{col.label}</span>
+                          <span className="text-3.5xl font-black block mt-2">{col.score}</span>
+                          <span className="text-[9px] text-slate-500 font-bold block mt-1.5 uppercase font-mono">
+                            {isCritical ? "Crítico" : isWarning ? "Aviso" : "Aprovado"}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* CORE WEB VITALS METRICS CARD */}
+                  <div className="bg-white dark:bg-slate-900 border-3 border-black rounded-2xl p-6 shadow-[6px_6px_0px_#000000]">
+                    <h3 className="font-bold text-lg border-b-2 border-black pb-3 text-black dark:text-white">Métricas de Experiência do Usuário (CWV)</h3>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-5">
+                      {[
+                        { label: "Largest Contentful Paint (LCP)", value: activeDomain.latestReport.metrics.lcp, desc: "Tempo de carregamento" },
+                        { label: "First Input Delay (FID)", value: activeDomain.latestReport.metrics.fid, desc: "Interatividade" },
+                        { label: "Cumulative Layout Shift (CLS)", value: activeDomain.latestReport.metrics.cls, desc: "Estabilidade Visual" },
+                        { label: "Speed Index", value: activeDomain.latestReport.metrics.speedIndex, desc: "Velocidade visível" }
+                      ].map((met, i) => (
+                        <div key={i} className="border-2 border-black p-4 rounded-xl bg-concrete dark:bg-slate-800">
+                          <span className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase block">{met.label}</span>
+                          <span className="text-2xl font-black mt-1 block text-black dark:text-white">{met.value}</span>
+                          <span className="text-[9px] text-slate-400 dark:text-slate-500 font-medium block mt-1">{met.desc}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* IDENTIFIED AUDIT ISSUES */}
+                  <div className="bg-white dark:bg-slate-900 border-3 border-black rounded-2xl p-6 shadow-[6px_6px_0px_#000000]">
+                    <h3 className="font-bold text-lg border-b-2 border-black pb-3 text-black dark:text-white">Problemas Identificados ({activeDomain.latestReport.issues.length})</h3>
+                    <div className="space-y-3.5 mt-5">
+                      {activeDomain.latestReport.issues.map(iss => (
+                        <div key={iss.id} className="border-2 border-black rounded-xl p-4 bg-slate-50 dark:bg-slate-850 flex gap-3.5 items-start">
+                          <Icon name="alert" className={`h-5 w-5 mt-0.5 shrink-0 ${iss.severity === "critical" ? "text-industrialRed" : "text-amber-500"}`} />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h4 className="font-black text-xs text-black dark:text-white">{iss.title}</h4>
+                              <span className={`px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase font-mono ${iss.severity === "critical" ? "bg-red-100 text-red-800" : "bg-amber-100 text-amber-800"}`}>
+                                {iss.severity === "critical" ? "Crítico" : "Alerta"}
+                              </span>
+                            </div>
+                            <p className="text-slate-500 text-xs mt-1 leading-relaxed">{iss.desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {activeTab === "history" && (
+                <div className="bg-white dark:bg-slate-900 border-3 border-black rounded-2xl p-6 shadow-[6px_6px_0px_#000000] animate-fade-in space-y-6">
+                  <div>
+                    <h3 className="font-bold text-lg text-black dark:text-white">Histórico de Performance Técnica</h3>
+                    <p className="text-xs text-slate-500 mt-1">Evolução do carregamento e SEO de {activeDomain.url} nos últimos meses.</p>
+                  </div>
+                  
+                  {/* Brutalist Bars Chart mockup */}
+                  <div className="border-2 border-black p-6 rounded-xl bg-concrete dark:bg-slate-850">
+                    <div className="flex items-end justify-between h-48 border-b-2 border-black pb-2 px-4 gap-2">
+                      {[
+                        { mes: "Março", score: 72 },
+                        { mes: "Abril", score: 78 },
+                        { mes: "Maio", score: 85 },
+                        { mes: "Junho", score: activeDomain.latestReport.scores.perf }
+                      ].map((bar, i) => (
+                        <div key={i} className="flex flex-col items-center flex-1">
+                          <span className="text-[10px] font-bold font-mono mb-1">{bar.score}</span>
+                          <div 
+                            style={{ height: `${bar.score}%` }} 
+                            className="w-full max-w-[45px] bg-activeBlue border-2 border-black rounded-t shadow-sm transition-all duration-500"
+                          />
+                          <span className="text-[9px] font-bold text-slate-500 mt-2 uppercase">{bar.mes}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "compare" && (
+                <div className="bg-white dark:bg-slate-900 border-3 border-black rounded-2xl p-6 shadow-[6px_6px_0px_#000000] animate-fade-in space-y-6">
+                  <div>
+                    <h3 className="font-bold text-lg text-black dark:text-white">Comparativo Side-by-Side</h3>
+                    <p className="text-xs text-slate-500 mt-1">Visão comparativa simplificada de domínios auditados.</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {domains.map(dom => (
+                      <div key={dom.id} className="border-2 border-black rounded-xl p-5 bg-concrete dark:bg-slate-800">
+                        <span className="text-[9px] bg-black text-[#EFEFEF] px-1.5 py-0.5 rounded font-mono font-bold uppercase">{dom.url}</span>
+                        <div className="grid grid-cols-3 gap-2 mt-4 text-center">
+                          <div className="bg-white dark:bg-slate-900 border-2 border-black p-2.5 rounded-lg">
+                            <span className="text-[8px] text-slate-400 font-bold uppercase block">SEO</span>
+                            <span className="text-xl font-black text-black dark:text-white block mt-1">{dom.latestReport.scores.seo}</span>
+                          </div>
+                          <div className="bg-white dark:bg-slate-900 border-2 border-black p-2.5 rounded-lg">
+                            <span className="text-[8px] text-slate-400 font-bold uppercase block">PERF</span>
+                            <span className="text-xl font-black text-black dark:text-white block mt-1">{dom.latestReport.scores.perf}</span>
+                          </div>
+                          <div className="bg-white dark:bg-slate-900 border-2 border-black p-2.5 rounded-lg">
+                            <span className="text-[8px] text-slate-400 font-bold uppercase block">LCP</span>
+                            <span className="text-xl font-black text-black dark:text-white block mt-1">{dom.latestReport.metrics.lcp}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "integrations" && (
+                <div className="bg-white dark:bg-slate-900 border-3 border-black rounded-2xl p-6 shadow-[6px_6px_0px_#000000] animate-fade-in space-y-6">
+                  <div>
+                    <h3 className="font-bold text-lg text-black dark:text-white">Vínculo de APIs & Search Console</h3>
+                    <p className="text-xs text-slate-500 mt-1">Integre dados analíticos reais de busca para análises automatizadas recorrentes.</p>
+                  </div>
+
+                  <div className="border-2 border-black rounded-xl p-5 bg-concrete dark:bg-slate-850 space-y-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-semibold text-slate-500">Conta Google Associada:</span>
+                      <div className="flex flex-wrap items-center gap-2 bg-white border-2 border-black px-3 py-1.5 rounded-xl">
+                        <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${activeDomain.googleConnected ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`}></span>
+                        <span className="text-xs font-bold text-slate-700 font-mono truncate max-w-[150px] sm:max-w-xs">usuario.demonstracao@gmail.com</span>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-slate-300 dark:border-slate-700 pt-4">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-black dark:text-white mb-3">Vínculos de Domínios Cadastrados</h4>
+                      <div className="space-y-2.5">
+                        {domains.map(dom => (
+                          <div key={dom.id} className="bg-white dark:bg-slate-900 border-2 border-black p-4 rounded-xl flex flex-col xl:flex-row justify-between xl:items-center gap-4">
+                            <div className="min-w-0 flex-1">
+                              <span className="text-xs font-black text-black dark:text-white truncate block">{dom.url}</span>
+                              <span className="text-[10px] text-slate-400 font-bold uppercase mt-1 block">Modo: {dom.googleConnected ? "Automatizado GSC" : "Análise Manual"}</span>
+                            </div>
+                            <button
+                              onClick={() => {
+                                setDomains(prev => prev.map(d => d.id === dom.id ? { ...d, googleConnected: !d.googleConnected } : d));
+                                triggerToast("Status de conexão alterado com sucesso!");
+                              }}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-extrabold border-2 border-black cursor-pointer shadow-sm neo-click ${
+                                dom.googleConnected ? "bg-red-50 hover:bg-red-100 text-red-700" : "bg-activeBlue text-white"
+                              }`}
+                            >
+                              {dom.googleConnected ? "Inativar Automatizado" : "Ativar Automatizado"}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "email" && (
+                <div className="bg-white dark:bg-slate-900 border-3 border-black rounded-2xl p-6 shadow-[6px_6px_0px_#000000] animate-fade-in space-y-6">
+                  <div>
+                    <h3 className="font-bold text-lg text-black dark:text-white">Envios Recorrentes por E-mail</h3>
+                    <p className="text-xs text-slate-500 mt-1 font-medium">Configure destinatários e alertas para receber relatórios de queda de performance de forma automatizada.</p>
+                  </div>
+
+                  <div className="border-2 border-black rounded-xl p-5 bg-concrete dark:bg-slate-800 space-y-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-black uppercase tracking-wider">Destinatário</label>
+                      <input 
+                        type="email" 
+                        defaultValue="quintellarj@gmail.com" 
+                        className="border-2 border-black rounded-lg p-2.5 text-xs bg-white text-black font-semibold font-mono"
+                      />
+                    </div>
+                    <button 
+                      onClick={() => triggerToast("Relatório de teste enviado para a fila!")}
+                      className="bg-activeBlue hover:bg-activeBlue/95 text-white px-4 py-2 rounded-lg text-xs font-bold border-2 border-black shadow-sm neo-click"
+                    >
+                      Enviar Relatório de Teste Agora
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "checklist" && (
+                <div className="bg-white dark:bg-slate-900 border-3 border-black rounded-2xl p-6 shadow-[6px_6px_0px_#000000] animate-fade-in space-y-6">
+                  <div className="flex items-center justify-between border-b-2 border-black pb-3">
+                    <div>
+                      <h3 className="font-bold text-lg text-black dark:text-white">Checklist de Otimização SEO</h3>
+                      <p className="text-xs text-slate-500 mt-1 font-medium">Verifique tarefas manuais recomendadas pela auditoria inteligente.</p>
+                    </div>
+                  </div>
+
+                  {/* Form de adição de tarefa */}
+                  <form onSubmit={handleAddChecklist} className="flex flex-col sm:flex-row gap-3">
+                    <input 
+                      type="text" 
+                      placeholder="Nova tarefa de SEO manual..." 
+                      value={newChkTit}
+                      onChange={(e) => setNewChkTit(e.target.value)}
+                      required
+                      className="flex-1 border-2 border-black rounded-lg p-2.5 text-xs bg-white text-black font-semibold"
+                    />
+                    <select 
+                      value={newChkPriority} 
+                      onChange={(e) => setNewChkPriority(e.target.value)}
+                      className="border-2 border-black rounded-lg p-2.5 text-xs bg-concrete text-black font-bold cursor-pointer"
+                    >
+                      <option value="high">Alta Prioridade</option>
+                      <option value="medium">Média Prioridade</option>
+                      <option value="low">Baixa Prioridade</option>
+                    </select>
+                    <button 
+                      type="submit" 
+                      className="bg-industrialRed hover:bg-industrialRed/95 text-white px-4 py-2.5 rounded-lg text-xs font-bold border-2 border-black shadow-sm neo-click shrink-0 flex items-center justify-center gap-1.5"
+                    >
+                      <Icon name="plus" className="h-4 w-4" /> Adicionar
+                    </button>
+                  </form>
+
+                  {/* Lista de tarefas */}
+                  <div className="space-y-2.5 pt-3">
+                    {checklist.map(task => (
+                      <div 
+                        key={task.id} 
+                        className={`border-2 border-black rounded-xl p-4 flex items-center justify-between gap-4 transition-colors ${
+                          task.status === "completed" ? "bg-emerald-50 dark:bg-emerald-950/20" : "bg-slate-50 dark:bg-slate-800/50"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <input 
+                            type="checkbox" 
+                            checked={task.status === "completed"} 
+                            onChange={() => toggleChecklist(task.id)}
+                            className="h-4.5 w-4.5 border-2 border-black text-emerald-600 focus:ring-0 rounded cursor-pointer"
+                          />
+                          <span className={`text-xs font-bold text-black dark:text-white ${task.status === "completed" ? "line-through text-slate-400" : ""}`}>
+                            {task.title}
+                          </span>
+                        </div>
+                        <span className={`px-2 py-0.5 rounded text-[8px] font-extrabold uppercase font-mono ${
+                          task.priority === "high" ? "bg-red-100 text-red-800" : task.priority === "medium" ? "bg-amber-100 text-amber-800" : "bg-blue-100 text-blue-800"
+                        }`}>
+                          {task.priority === "high" ? "Alta" : task.priority === "medium" ? "Média" : "Baixa"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "maintenance" && (
+                <div className="bg-white dark:bg-slate-900 border-3 border-black rounded-2xl p-6 shadow-[6px_6px_0px_#000000] animate-fade-in space-y-6">
+                  <div>
+                    <h3 className="font-bold text-lg text-black dark:text-white">Painel de Manutenção Administrativa</h3>
+                    <p className="text-xs text-slate-500 mt-1">Ferramentas de administração de emergência e infraestrutura do SiteAnalyzer.</p>
+                  </div>
+
+                  <div className="border-2 border-black rounded-xl p-5 bg-concrete dark:bg-slate-850 space-y-5">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <h4 className="text-xs font-black uppercase tracking-wider text-black dark:text-white">Modo de Manutenção Programada</h4>
+                        <p className="text-[11px] text-slate-500 mt-0.5">Ao ativar, novas auditorias e análises serão desabilitadas temporariamente.</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setIsMaintenanceMode(!isMaintenanceMode);
+                          triggerToast(`Modo de manutenção programada ${!isMaintenanceMode ? "ativado" : "desativado"}`);
+                        }}
+                        className={`px-4 py-2 rounded-lg text-xs font-extrabold border-2 border-black cursor-pointer shadow-sm neo-click ${
+                          isMaintenanceMode ? "bg-red-100 text-red-800" : "bg-activeBlue text-white"
+                        }`}
+                      >
+                        {isMaintenanceMode ? "Desativar" : "Ativar"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            </main>
+
+            {/* RESPONSIVE FOOTER */}
+            <footer className="border-t border-slate-700 bg-slate-900 py-6 mt-12 text-slate-300 text-xs text-center">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-2">
+                <p className="text-slate-200 font-medium">SiteAnalyzer © {new Date().getFullYear()} - Auditoria Inteligente e Otimização Avançada.</p>
+                <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-slate-400">
+                  <span>Powered by Gemini 3.5 Flash</span>
+                  <span className="hidden sm:inline">•</span>
+                  <span>PDF & CSV Exporter</span>
+                  <span className="hidden sm:inline">•</span>
+                  <span>Google Workspace integration</span>
+                </div>
+              </div>
+            </footer>
+
+          </div>
+        </div>
+      );
+    }
+
+    const rootElement = document.getElementById("root");
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(<App />);
+  </script>
+</body>
+</html>

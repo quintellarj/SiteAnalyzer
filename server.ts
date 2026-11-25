@@ -116,9 +116,9 @@ function validateApiKey(key: string | undefined): asserts key is string {
     throw new Error("FATAL [Fail-Closed]: A variável de ambiente GEMINI_API_KEY não está definida.");
   }
   const trimmed = key.trim();
-  if (trimmed === "" || trimmed === "MY_GEMINI_API_KEY") {
-    logger.securityAlert("Erro Fatal [Fail-Closed]: GEMINI_API_KEY vazia ou com valor padrão.", { ip: "127.0.0.1" });
-    throw new Error("FATAL [Fail-Closed]: A variável de ambiente GEMINI_API_KEY está vazia ou possui o valor padrão.");
+  if (!trimmed || trimmed === "MY_GEMINI_API_KEY" || trimmed.length < 30) {
+    logger.fatal("Erro Fatal: GEMINI_API_KEY inválida ou insegura.");
+    process.exit(1);
   }
   if (trimmed.length < 10) {
     logger.securityAlert("Erro Fatal [Fail-Closed]: GEMINI_API_KEY muito curta.", {

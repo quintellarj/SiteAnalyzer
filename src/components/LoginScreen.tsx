@@ -52,7 +52,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
     setTimeout(() => {
       setIsLoading(false);
       const adminEmail = import.meta.env.VITE_ADMIN_EMAIL;
-      const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD;
+      const adminPassword = import.meta.env.process.env.SERVER_ONLY_SECRET_KEY;
 
       if (
         adminEmail &&
